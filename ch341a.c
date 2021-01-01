@@ -18,7 +18,27 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#ifdef _MSC_VER
+#include <libusb.h>
+
+#define SA_RESTART 0
+#define sigfillset(a)
+
+struct sigaction
+{
+    void (*sa_handler) (int);
+    int sa_mask;
+    int sa_flags;
+};
+
+int sigaction(int a, struct sigaction *b, struct sigaction *c)
+{
+    return 0;
+}
+
+#else
 #include <libusb-1.0/libusb.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -27,7 +47,7 @@
 #include <signal.h>
 #include "ch341a.h"
 
-int32_t bulkin_count;
+uint32_t bulkin_count;
 struct libusb_device_handle *devHandle = NULL;
 struct sigaction saold;
 int force_stop = 0;
@@ -71,7 +91,7 @@ int32_t ch341Configure(uint16_t vid, uint16_t pid)
 
     if(libusb_kernel_driver_active(devHandle, 0)) {
         ret = libusb_detach_kernel_driver(devHandle, 0);
-        if(ret) {
+        if(ret && (ret != LIBUSB_ERROR_NOT_SUPPORTED)) {
             fprintf(stderr, "Failed to detach kernel driver: '%s'\n", strerror(-ret));
             goto close_handle;
         }
@@ -315,7 +335,7 @@ void cbBulkIn(struct libusb_transfer *transfer)
             /* the first package has cmd and address info, so discard 4 bytes */
             if (transfer->user_data != NULL) {
                 for(int i = (bulkin_count == 0) ? 4 : 0; i < transfer->actual_length; ++i) {
-                    *((uint8_t*)transfer->user_data++) = swapByte(transfer->buffer[i]);
+                    *(((uint8_t*)transfer->user_data)++) = swapByte(transfer->buffer[i]);
                 }
             }
             bulkin_count++;

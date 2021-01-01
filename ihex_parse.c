@@ -26,9 +26,18 @@
 
 #include "cintelhex.h"
 
+#ifdef _MSC_VER
+#ifdef _WIN64
+#define ssize_t __int64
+#else
+#define ssize_t long
+#endif
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 #include <stdio.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <string.h>
 
 #include <sys/stat.h>

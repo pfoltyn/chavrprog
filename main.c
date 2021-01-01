@@ -24,7 +24,9 @@
 #include <getopt.h>
 #include "ch341a.h"
 #include "cintelhex.h"
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #include "chavrprog.h"
 #include "config.h"
 

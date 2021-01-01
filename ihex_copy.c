@@ -43,8 +43,8 @@ void ihex_set_error(ihex_error_t errnum, char* error);
 int ihex_mem_copy(ihex_recordset_t *rs, void* dst, ulong_t n,
                   ihex_width_t w, ihex_byteorder_t o)
 {
-	int      r;
-	uint_t   i = 0, j, l;
+	int      r, l;
+	uint_t   i = 0, j;
 	uint32_t offset = 0x00, address = 0x00;
 
 	ihex_rdata_t   d = (ihex_rdata_t) dst;

@@ -26,7 +26,23 @@
 #include <getopt.h>
 #include "ch341a.h"
 #include "cintelhex.h"
+#ifdef _MSC_VER
+#include <Windows.h>
+void usleep(__int64 usec)
+{
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+}
+#else
 #include <unistd.h>
+#endif
 #include "chavrprog.h"
 
 #define CMD_READ 0x20
@@ -264,7 +280,7 @@ void check_flash(const char * filename){
 
   read_flash(ihex_rs_get_size(rs));
 
-  for(int i=(*((*rs).ihrs_records)).ihr_address; i<ihex_rs_get_size(rs); i++){
+  for(ulong_t i=(*((*rs).ihrs_records)).ihr_address; i<ihex_rs_get_size(rs); i++){
     if(data_buffer[i]==*dst){
 
     }
